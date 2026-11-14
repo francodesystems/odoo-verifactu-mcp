@@ -1,0 +1,30 @@
+{
+  "name": "@francodesystems-npm/odoo-verifactu-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Spanish tax compliance in Odoo: Veri*Factu and SII status, AEAT errors, QR and CSV per invoice, and a VAT summary by tax. Works with Odoo's own modules and with the OCA ones.",
+  "keywords": ["mcp", "model-context-protocol", "odoo", "verifactu", "veri*factu", "sii", "aeat", "spain", "iva", "claude"],
+  "license": "MIT",
+  "homepage": "https://francodesystems.com/verifactu",
+  "repository": { "type": "git", "url": "git+https://github.com/francodesystems/odoo-verifactu-mcp.git" },
+  "bugs": { "url": "https://github.com/francodesystems/odoo-verifactu-mcp/issues" },
+  "author": { "name": "Francodesystems", "url": "https://francodesystems.com" },
+  "type": "module",
+  "bin": { "odoo-verifactu-mcp": "dist/index.js" },
+  "main": "dist/index.js",
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": { "node": ">=20.0.0" },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "start": "node dist/index.js",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}

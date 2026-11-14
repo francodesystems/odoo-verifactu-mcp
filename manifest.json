@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/schemas/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
+  "name": "odoo-verifactu-mcp",
+  "display_name": "Odoo Veri*Factu & SII (Spain)",
+  "version": "0.1.0",
+  "description": "Read-only MCP server for Spanish tax compliance in Odoo: Veri*Factu and SII status, AEAT errors, QR and CSV per invoice, and a VAT summary by tax.",
+  "long_description": "Ask your AI assistant which invoices the AEAT rejected and why, which ones are still pending, when the certificate expires, or how much output and input VAT the quarter has. Works with Odoo's own Spanish modules (l10n_es_edi_verifactu, l10n_es_edi_sii) and with the OCA ones (l10n_es_verifactu_oca, l10n_es_aeat_sii_oca), on Odoo 16 to 20. It only reads: it never sends, cancels or changes anything.",
+  "author": { "name": "Francodesystems", "url": "https://francodesystems.com" },
+  "homepage": "https://francodesystems.com/verifactu",
+  "documentation": "https://github.com/francodesystems/odoo-verifactu-mcp#readme",
+  "support": "https://github.com/francodesystems/odoo-verifactu-mcp/issues",
+  "repository": { "type": "git", "url": "https://github.com/francodesystems/odoo-verifactu-mcp" },
+  "license": "MIT",
+  "keywords": ["odoo", "verifactu", "sii", "aeat", "spain", "vat", "iva", "erp", "accounting"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "ODOO_URL": "${user_config.odoo_url}",
+        "ODOO_API_KEY": "${user_config.odoo_api_key}",
+        "ODOO_DB": "${user_config.odoo_db}",
+        "ODOO_USERNAME": "${user_config.odoo_username}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "compliance_overview", "description": "Installed Spanish modules, company setup, certificates and invoice counts by Veri*Factu and SII state." },
+    { "name": "verifactu_invoices", "description": "Customer invoices with their Veri*Factu state, AEAT CSV and last error." },
+    { "name": "verifactu_errors", "description": "AEAT errors of the period grouped by message, with sample invoices." },
+    { "name": "sii_invoices", "description": "Issued and received invoices with their SII state, CSV and last error." },
+    { "name": "invoice_aeat_detail", "description": "One invoice at the AEAT: state, QR, CSV, submission history and errors." },
+    { "name": "vat_summary", "description": "Output and input VAT by tax for the period, with bases. A working aid for form 303." }
+  ],
+  "user_config": {
+    "odoo_url": { "type": "string", "title": "Odoo URL", "description": "e.g. https://mycompany.odoo.com", "required": true },
+    "odoo_api_key": { "type": "string", "title": "API key", "description": "Odoo → Preferences → Account Security → New API Key. Use a user with read access to Accounting.", "required": true, "sensitive": true },
+    "odoo_db": { "type": "string", "title": "Database", "description": "Only needed if the server hosts several databases, or for Odoo 16-18.", "required": false },
+    "odoo_username": { "type": "string", "title": "Login (Odoo 16-18 only)", "description": "Leave empty on Odoo 19 and later. On Odoo 16-18, the user's login email.", "required": false }
+  },
+  "compatibility": { "platforms": ["darwin", "win32", "linux"], "runtimes": { "node": ">=20.0.0" } }
+}
