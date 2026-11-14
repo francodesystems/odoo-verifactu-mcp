@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.francodesystems/odoo-verifactu-mcp",
+  "title": "Odoo Veri*Factu & SII (Spain)",
+  "description": "Spanish tax compliance in Odoo: Veri*Factu and SII status, AEAT errors, QR/CSV and VAT by tax. Read-only.",
+  "version": "0.1.0",
+  "websiteUrl": "https://francodesystems.com/verifactu",
+  "repository": { "url": "https://github.com/francodesystems/odoo-verifactu-mcp", "source": "github" },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@francodesystems-npm/odoo-verifactu-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "ODOO_URL", "description": "Base URL of your Odoo, e.g. https://mycompany.odoo.com", "isRequired": true, "format": "string" },
+        { "name": "ODOO_API_KEY", "description": "Odoo API key (Preferences > Account Security > New API Key)", "isRequired": true, "isSecret": true, "format": "string" },
+        { "name": "ODOO_DB", "description": "Database name. Needed with several databases and on Odoo 16-18.", "isRequired": false, "format": "string" },
+        { "name": "ODOO_USERNAME", "description": "User login. Only on Odoo 16-18 (JSON-RPC); leave unset on Odoo 19+.", "isRequired": false, "format": "string" }
+      ]
+    }
+  ]
+}
