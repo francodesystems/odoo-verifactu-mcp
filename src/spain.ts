@@ -172,7 +172,7 @@ export class Spain {
 		const det = await this.detect();
 		if (det.verifactu === "none")
 			throw new Error(
-				"No Veri*Factu module is installed in this Odoo. Install `l10n_es_edi_verifactu` (Odoo S.A., Odoo 18+) or `l10n_es_verifactu_oca` (OCA l10n-spain).",
+				"No Veri*Factu module is installed in this Odoo. Install `l10n_es_edi_verifactu` (Odoo S.A., Odoo 17+) or `l10n_es_verifactu_oca` (OCA l10n-spain).",
 			);
 		return det as Detected & { verifactu: "odoo" | "oca" };
 	}
