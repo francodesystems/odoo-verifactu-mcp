@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.francodesystems/odoo-verifactu-mcp",
   "title": "Odoo Veri*Factu & SII (Spain)",
-  "description": "Spanish tax compliance in Odoo: Veri*Factu and SII status, AEAT errors, QR/CSV and VAT by tax. Read-only.",
+  "description": "Veri*Factu and SII in Odoo: AEAT status and errors per invoice, QR, CSV and VAT by tax. Read-only.",
   "version": "0.1.0",
   "websiteUrl": "https://francodesystems.com/verifactu",
   "repository": { "url": "https://github.com/francodesystems/odoo-verifactu-mcp", "source": "github" },
