@@ -118,7 +118,8 @@ export class Spain {
 					return [[f, "=", state]];
 			}
 		}
-		const on: unknown[] = [["verifactu_enabled", "=", true]];
+		// OCA's search on verifactu_enabled only looks at the company; its compute also needs the journal.
+		const on: unknown[] = [["verifactu_enabled", "=", true], ["journal_id.verifactu_enabled", "=", true]];
 		switch (state) {
 			case "pending":
 				return [...on, ["aeat_state", "=", "not_sent"], ["aeat_send_failed", "=", false], ["state", "=", "posted"]];
@@ -210,7 +211,7 @@ export class Spain {
 		const det = await this.requireVf();
 		const domain = await this.baseDomain(SALES, opts.period, opts.company, opts.partner);
 		if (opts.state) domain.push(...this.vfDomain(det.verifactu, opts.state));
-		else if (det.verifactu === "oca") domain.push(["verifactu_enabled", "=", true]);
+		else if (det.verifactu === "oca") domain.push(["verifactu_enabled", "=", true], ["journal_id.verifactu_enabled", "=", true]);
 		const fields = this.vfFields(det.verifactu, det.moveFields);
 		const [rows, total] = await Promise.all([
 			this.odoo.searchRead<Row>("account.move", domain, fields, { limit: opts.limit, order: "invoice_date desc, id desc" }),
@@ -386,18 +387,37 @@ export class Spain {
 	async invoiceDetail(invoice: string | number, company?: string | number) {
 		const det = await this.detect();
 		const { id } = await this.findInvoice(invoice, company);
-		const want = [
-			"name", "ref", "invoice_date", "partner_id", "amount_untaxed", "amount_tax", "amount_total", "currency_id", "move_type", "state", "company_id",
-			// Odoo S.A. Veri*Factu
-			"l10n_es_edi_verifactu_state", "l10n_es_edi_verifactu_required", "l10n_es_edi_verifactu_warning", "l10n_es_edi_verifactu_qr_code",
-			"l10n_es_edi_verifactu_substituted_entry_id", "l10n_es_edi_verifactu_substitution_move_ids",
-			// Odoo S.A. SII
-			"l10n_es_edi_sii_state", "l10n_es_edi_csv", "l10n_es_edi_sii_error", "l10n_es_edi_is_required", "l10n_es_registration_date",
-			// OCA
-			"aeat_state", "aeat_send_error", "aeat_send_failed", "verifactu_enabled", "verifactu_csv", "verifactu_qr_url", "verifactu_hash",
-			"verifactu_send_date", "verifactu_registration_date", "verifactu_return", "sii_enabled", "sii_csv", "sii_send_date", "sii_return",
-		].filter((f) => det.moveFields.has(f));
-		const [r] = await this.odoo.call<Row[]>("account.move", "read", { ids: [id], fields: want });
+		const core = ["name", "ref", "invoice_date", "partner_id", "amount_untaxed", "amount_tax", "amount_total", "currency_id", "move_type", "state", "company_id"];
+		// OCA computes some Veri*Factu fields eagerly and raises on invoices that are not Veri*Factu
+		// (e.g. "tax is not mapped to VERI*FACTU" on an SII vendor bill), so first read which regime applies.
+		const flags = ["verifactu_enabled", "sii_enabled", "l10n_es_edi_verifactu_required", "l10n_es_edi_is_required"].filter((f) => det.moveFields.has(f));
+		const [base] = await this.odoo.call<Row[]>("account.move", "read", { ids: [id], fields: [...core, ...flags] });
+		const extra: string[] = [];
+		if (det.verifactu === "odoo")
+			extra.push("l10n_es_edi_verifactu_state", "l10n_es_edi_verifactu_warning", "l10n_es_edi_verifactu_qr_code", "l10n_es_edi_verifactu_substituted_entry_id");
+		if (det.verifactu === "oca" && base.verifactu_enabled)
+			extra.push("aeat_state", "aeat_send_error", "aeat_send_failed", "verifactu_csv", "verifactu_qr_url", "verifactu_hash", "verifactu_send_date", "verifactu_registration_date", "verifactu_return");
+		if (det.sii === "odoo" && base.l10n_es_edi_is_required) extra.push("l10n_es_edi_sii_state", "l10n_es_edi_csv", "l10n_es_edi_sii_error", "l10n_es_registration_date");
+		if (det.sii === "oca" && base.sii_enabled) extra.push("aeat_state", "aeat_send_error", "aeat_send_failed", "sii_csv", "sii_send_date", "sii_return");
+		const wanted = [...new Set(extra)].filter((f) => det.moveFields.has(f));
+		let r: Row = base;
+		if (wanted.length) {
+			try {
+				const [more] = await this.odoo.call<Row[]>("account.move", "read", { ids: [id], fields: wanted });
+				r = { ...base, ...more };
+			} catch {
+				// One computed field failed: read them one by one and keep what Odoo can give.
+				r = { ...base };
+				for (const f of wanted) {
+					try {
+						const [one] = await this.odoo.call<Row[]>("account.move", "read", { ids: [id], fields: [f] });
+						r[f] = one[f];
+					} catch {
+						r[f] = null;
+					}
+				}
+			}
+		}
 
 		const out: Row = {
 			id: r.id,

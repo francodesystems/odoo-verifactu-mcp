@@ -81,8 +81,11 @@ claude mcp add odoo-verifactu -e ODOO_URL=https://mycompany.odoo.com -e ODOO_API
 
 ## How it was tested
 
-- Odoo 20 with `l10n_es_edi_verifactu` and `l10n_es_edi_sii`: every tool through a real MCP client, over JSON-2 and JSON-RPC (`scripts/smoke.mjs`), and the VAT summary checked to the cent against the journal items.
-- OCA: field names and states taken from the l10n-spain 18.0 sources and covered by unit tests against a simulated Odoo (`npm test`). It has not yet been run against a live OCA installation. If you use the OCA modules, an issue with what you see is very welcome.
+- **Odoo 20** with `l10n_es_edi_verifactu` and `l10n_es_edi_sii` (Odoo S.A.): every tool through a real MCP client, over JSON-2 and JSON-RPC (`scripts/smoke.mjs`). The VAT summary was checked to the cent against the journal items.
+- **Odoo 18** with the OCA modules (`l10n_es_verifactu_oca` and `l10n_es_aeat_sii_oca` from l10n-spain 18.0): every tool over JSON-RPC, with one company on Veri\*Factu and one on SII and invoices in every `aeat_state`.
+- Unit tests for the OCA state mapping (`npm test`).
+
+The invoices were set to each state directly in test databases. Nothing was sent to the AEAT.
 
 ## Development
 
